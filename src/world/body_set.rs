@@ -1,11 +1,6 @@
 use crate::{
     nalgebra::RealField,
-    nphysics::{
-        force_generator::DefaultForceGeneratorSet,
-        joint::DefaultJointConstraintSet,
-        object::{Body, BodySet as NBodySet, DefaultBodySet, DefaultColliderSet},
-        world::{GeometricalWorld, MechanicalWorld},
-    },
+    nphysics::object::{Body, BodySet as NBodySet},
 };
 
 use specs::{
@@ -18,17 +13,6 @@ use specs::{
 use std::ops::{Deref, DerefMut, Not};
 
 pub type BodyHandleType = Entity;
-pub type ColliderHandleType = Entity;
-
-pub type MechanicalWorldRes<'a, N> = MechanicalWorld<N, BodySet<'a, N>, ColliderHandleType>;
-pub type GeometricalWorldRes<N> = GeometricalWorld<N, BodyHandleType, ColliderHandleType>;
-
-// TODO
-pub type ColliderSetRes<N> = DefaultColliderSet<N, BodyHandleType>;
-
-// TODO: Could likely turn these into storages?
-pub type JointConstraintSetRes<'a, N> = DefaultJointConstraintSet<N, BodySet<'a, N>>;
-pub type ForceGeneratorSetRes<'a, N> = DefaultForceGeneratorSet<N, BodySet<'a, N>>;
 
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
@@ -123,8 +107,6 @@ impl<'a, N: RealField> NBodySet<N> for BodySet<'a, N> {
     }
 }
 
-pub type BodySetRes<N> = DefaultBodySet<N>;
-
 pub type ReadBodyStorage<'a, N> = BodySetStorage<'a, N, Fetch<'a, MaskedStorage<BodyComponent<N>>>>;
 
 impl<'a, N: RealField> SystemData<'a> for ReadBodyStorage<'a, N> {
@@ -153,7 +135,7 @@ impl<'a, N: RealField> SystemData<'a> for ReadBodyStorage<'a, N> {
 }
 
 pub type WriteBodyStorage<'a, N> =
-    BodySetStorage<'a, N, FetchMut<'a, MaskedStorage<BodyComponent<N>>>>;
+BodySetStorage<'a, N, FetchMut<'a, MaskedStorage<BodyComponent<N>>>>;
 
 impl<'a, N: RealField> SystemData<'a> for WriteBodyStorage<'a, N> {
     fn setup(res: &mut World) {
@@ -192,9 +174,9 @@ impl<N: RealField> Component for BodyComponent<N> {
 pub struct BodySetStorage<'e, N: RealField, D>(pub Storage<'e, BodyComponent<N>, D>);
 
 impl<'a, 'e, N, D> Join for &'a BodySetStorage<'e, N, D>
-where
-    N: RealField,
-    D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
+    where
+        N: RealField,
+        D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Mask = &'a BitSet;
     type Type = &'a dyn Body<N>;
@@ -210,9 +192,9 @@ where
 }
 
 impl<'a, 'e, N, D> Join for &'a mut BodySetStorage<'e, N, D>
-where
-    N: RealField,
-    D: DerefMut<Target = MaskedStorage<BodyComponent<N>>>,
+    where
+        N: RealField,
+        D: DerefMut<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Mask = &'a BitSet;
     type Type = &'a mut dyn Body<N>;
@@ -229,9 +211,9 @@ where
 }
 
 impl<'a, 'e, N, D> Not for &'a BodySetStorage<'e, N, D>
-where
-    N: RealField,
-    D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
+    where
+        N: RealField,
+        D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Output = AntiStorage<'a>;
 

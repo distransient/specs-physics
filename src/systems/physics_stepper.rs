@@ -2,7 +2,7 @@ use crate::{
     events::{ContactEvent, ContactEvents, ContactType, ProximityEvent, ProximityEvents},
     nalgebra::RealField,
     ncollide::pipeline::narrow_phase::ContactEvent as NContactEvent,
-    world::{BodySetRes, ColliderHandleType, ColliderSetRes, ForceGeneratorSetRes, GeometricalWorldRes,
+    world::{body_set::BodySet, ColliderHandleType, ColliderSetRes, ForceGeneratorSetRes, GeometricalWorldRes,
     JointConstraintSetRes, MechanicalWorldRes},
 };
 
@@ -20,7 +20,7 @@ impl<'a, N: RealField> System<'a> for PhysicsStepperSystem<N> {
         Entities<'a>,
         WriteExpect<'a, MechanicalWorldRes<'a, N>>,
         WriteExpect<'a, GeometricalWorldRes<N>>,
-        WriteExpect<'a, BodySetRes<N>>,
+        WriteExpect<'a, BodySet<'a, N>>,
         WriteExpect<'a, ColliderSetRes<N>>,
         WriteExpect<'a, JointConstraintSetRes<'a, N>>,
         WriteExpect<'a, ForceGeneratorSetRes<'a, N>>,
