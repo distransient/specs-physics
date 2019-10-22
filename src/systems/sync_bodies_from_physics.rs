@@ -1,29 +1,18 @@
-use crate::{nalgebra::RealField, position::Position, world::ReadBodyStorage};
-
-use specs::{Join, System, WriteStorage};
-
+use crate::{nalgebra::RealField, position::Position, world::BodyComponent};
+use specs::{Join, ReadStorage, System, WriteStorage};
 use std::marker::PhantomData;
 
 /// The `SyncBodiesFromPhysicsSystem` synchronised the updated position of
 /// the `RigidBody`s in the nphysics `World` with their Specs counterparts. This
 /// affects the `Position` `Component` related to the `Entity`.
-pub struct SyncBodiesFromPhysicsSystem<N, P> {
-    n_marker: PhantomData<N>,
-    p_marker: PhantomData<P>,
-}
+pub struct SyncBodiesFromPhysicsSystem<N: RealField, P: Position<N>>(PhantomData<(N, P)>);
 
-impl<'s, N, P> System<'s> for SyncBodiesFromPhysicsSystem<N, P>
-where
-    N: RealField,
-    P: Position<N>,
-{
-    type SystemData = (WriteStorage<'s, P>, ReadBodyStorage<'s, N>);
+impl<'s, N: RealField, P: Position<N>> System<'s> for SyncBodiesFromPhysicsSystem<N, P> {
+    type SystemData = (WriteStorage<'s, P>, ReadStorage<'s, BodyComponent<N>>);
 
-    fn run(&mut self, data: Self::SystemData) {
-        let (mut positions, body_set) = data;
-
+    fn run(&mut self, (mut positions, bodies): Self::SystemData) {
         // iterate over all PhysicBody components joined with their Positions
-        for (body, position) in (&body_set, &mut positions).join() {
+        for (position, body) in (&mut positions, &bodies).join() {
             // if a RigidBody exists in the nphysics World we fetch it and update the
             // Position component accordingly
             if let Some(part) = body.part(0) {
@@ -33,15 +22,8 @@ where
     }
 }
 
-impl<N, P> Default for SyncBodiesFromPhysicsSystem<N, P>
-where
-    N: RealField,
-    P: Position<N>,
-{
+impl<N: RealField, P: Position<N>> Default for SyncBodiesFromPhysicsSystem<N, P> {
     fn default() -> Self {
-        Self {
-            n_marker: PhantomData,
-            p_marker: PhantomData,
-        }
+        Self(PhantomData)
     }
 }

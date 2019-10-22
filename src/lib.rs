@@ -5,7 +5,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! specs-physics = "0.3.0"
+//! specs-physics = "0.4.0"
 //! ```
 //!
 //! **specs-physics** defines a set of [Specs] `System`s and `Component`s to
@@ -249,7 +249,7 @@ pub use ncollide2d as ncollide;
 #[cfg(feature = "dim2")]
 pub use nphysics2d as nphysics;
 
-//pub mod builder;
+pub mod builder;
 pub mod events;
 pub mod position;
 pub mod systems;

@@ -4,11 +4,9 @@ use specs::{Dispatcher, DispatcherBuilder};
 
 mod physics_stepper;
 mod sync_bodies_from_physics;
-mod sync_bodies_to_physics;
 
 pub use self::{
     physics_stepper::PhysicsStepperSystem, sync_bodies_from_physics::SyncBodiesFromPhysicsSystem,
-    sync_bodies_to_physics::SyncBodiesToPhysicsSystem,
 };
 
 /// Convenience function for configuring and building a `Dispatcher` with all
@@ -38,14 +36,6 @@ where
     N: RealField,
     P: Position<N>,
 {
-    // add SyncBodiesToPhysicsSystem first since we have to start with bodies;
-    // colliders can exist without a body but in most cases have a body parent
-    //dispatcher_builder.add(
-    //    SyncBodiesToPhysicsSystem::<N, P>::default(),
-    //    "sync_bodies_to_physics_system",
-    //    &[],
-    //);
-
     // add PhysicsStepperSystem after all other Systems that write data to the
     // nphysics World and has to depend on them; this System is used to progress the
     // nphysics World for all existing objects

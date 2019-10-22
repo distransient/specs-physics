@@ -1,13 +1,13 @@
-use crate::{handle::BodyHandle, nalgebra::RealField, nphysics::object::Body, world::BodySetRes};
+use crate::{nalgebra::RealField, nphysics::object::Body, world::body_set::BodyComponent};
 
 use specs::{world::Builder, EntityBuilder};
 
 pub trait EntityBuilderExt {
-    fn with_body<N: RealField>(self, set: &mut BodySetRes<N>, body: impl Body<N>) -> Self;
+    fn with_body<N: RealField>(self, body: impl Body<N>) -> Self;
 }
 
 impl EntityBuilderExt for EntityBuilder<'_> {
-    fn with_body<N: RealField>(self, set: &mut BodySetRes<N>, body: impl Body<N>) -> Self {
-        self.with(BodyHandle(set.insert(body)))
+    fn with_body<N: RealField>(self, body: impl Body<N>) -> Self {
+        self.with(BodyComponent(Box::new(body)))
     }
 }
