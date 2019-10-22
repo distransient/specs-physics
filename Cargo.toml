@@ -31,8 +31,8 @@ nalgebra = "0.18"
 ncollide2d = { version = "0.20", optional = true }
 ncollide3d = { version = "0.20", optional = true }
 
-nphysics2d = { version = "0.12", optional = true }
-nphysics3d = { version = "0.12", optional = true }
+nphysics2d = { path = "../nphysics/build/nphysics2d", optional = true }
+nphysics3d = { path = "../nphysics/build/nphysics3d", optional = true }
 
 amethyst_core = { version = "0.8", optional = true }
 

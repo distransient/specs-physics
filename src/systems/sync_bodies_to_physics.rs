@@ -1,15 +1,10 @@
 use std::marker::PhantomData;
 
 use specs::{
-    storage::ComponentEvent, BitSet, Join, ReaderId, System,
-    World, WriteStorage, Tracked,
+    storage::ComponentEvent, BitSet, Join, ReaderId, System, World, WorldExt, WriteStorage,
 };
 
-use crate::{
-    nalgebra::RealField,
-    position::Position,
-    world::WriteBodyStorage,
-};
+use crate::{nalgebra::RealField, position::Position, world::WriteBodyStorage};
 
 /// The `SyncBodiesToPhysicsSystem` handles the synchronisation of `PhysicsBody`
 /// `Component`s into the physics `World`.
@@ -22,7 +17,9 @@ pub struct SyncBodiesToPhysicsSystem<N, P> {
 impl<N: RealField, P: Position<N>> SyncBodiesToPhysicsSystem<N, P> {
     fn new(world: &mut World) -> Self {
         SyncBodiesToPhysicsSystem {
-            positions_reader_id: world.write_component::<P>().register_reader()
+            positions_reader_id: world.write_component::<P>().register_reader(),
+            n_marker: PhantomData,
+            p_marker: PhantomData,
         }
     }
 }
@@ -32,21 +29,15 @@ where
     N: RealField,
     P: Position<N>,
 {
-    type SystemData = (
-        WriteBodyStorage<'s, N>,
-        WriteStorage<'s, P>,
-    );
+    type SystemData = (WriteBodyStorage<'s, N>, WriteStorage<'s, P>);
 
     fn run(&mut self, data: Self::SystemData) {
-        let (
-            mut body_set,
-            mut positions
-        ) = data;
+        let (mut body_set, mut positions) = data;
 
         // collect all ComponentEvents for the Position storage
-        let modified_positions = BitSet::new();
+        let mut modified_positions = BitSet::new();
 
-        for component_event in positions.channel().read(self.positions_reader_id) {
+        for component_event in positions.channel().read(&mut self.positions_reader_id) {
             match component_event {
                 ComponentEvent::Modified(id) => {
                     debug!("Got Modified event with id: {}", id);

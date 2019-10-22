@@ -59,44 +59,27 @@ impl<'a, N: RealField> SystemData<'a> for BodySet<'a, N> {
 }
 
 impl<'a, N: RealField> NBodySet<N> for BodySet<'a, N> {
-    type Body = dyn Body<N>;
     type Handle = BodyHandleType;
 
-    fn get(&self, handle: Self::Handle) -> Option<&Self::Body> {
+    fn get(&self, handle: Self::Handle) -> Option<&dyn Body<N>> {
         self.storage.0.get(handle).map(|x| x.0.as_ref())
     }
 
-    fn get_mut(&mut self, handle: Self::Handle) -> Option<&mut Self::Body> {
+    fn get_mut(&mut self, handle: Self::Handle) -> Option<&mut dyn Body<N>> {
         self.storage.0.get_mut(handle).map(|x| x.0.as_mut())
-    }
-
-    fn get_pair_mut(
-        &mut self,
-        handle1: Self::Handle,
-        handle2: Self::Handle,
-    ) -> (Option<&mut Self::Body>, Option<&mut Self::Body>) {
-        let b1 = self.get_mut(handle1).map(|b| b as *mut dyn Body<N>);
-        let b2 = self.get_mut(handle2).map(|b| b as *mut dyn Body<N>);
-        unsafe {
-            use std::mem;
-            (
-                b1.map(|b| mem::transmute(b)),
-                b2.map(|b| mem::transmute(b))
-            )
-        }
     }
 
     fn contains(&self, handle: Self::Handle) -> bool {
         self.storage.0.contains(handle)
     }
 
-    fn foreach(&self, mut f: impl FnMut(Self::Handle, &Self::Body)) {
+    fn foreach(&self, mut f: &mut dyn FnMut(Self::Handle, &dyn Body<N>)) {
         for (handle, body) in (&self.entities, &self.storage.0).join() {
             f(handle, body.0.as_ref());
         }
     }
 
-    fn foreach_mut(&mut self, mut f: impl FnMut(Self::Handle, &mut Self::Body)) {
+    fn foreach_mut(&mut self, mut f: &mut dyn FnMut(Self::Handle, &mut dyn Body<N>)) {
         for (handle, body) in (&self.entities, &mut self.storage.0).join() {
             f(handle, body.0.as_mut());
         }
@@ -126,7 +109,10 @@ impl<'a, N: RealField> SystemData<'a> for ReadBodyStorage<'a, N> {
     }
 
     fn reads() -> Vec<ResourceId> {
-        vec![ResourceId::new::<EntitiesRes>(), ResourceId::new::<MaskedStorage<BodyComponent<N>>>()]
+        vec![
+            ResourceId::new::<EntitiesRes>(),
+            ResourceId::new::<MaskedStorage<BodyComponent<N>>>(),
+        ]
     }
 
     fn writes() -> Vec<ResourceId> {
@@ -135,7 +121,7 @@ impl<'a, N: RealField> SystemData<'a> for ReadBodyStorage<'a, N> {
 }
 
 pub type WriteBodyStorage<'a, N> =
-BodySetStorage<'a, N, FetchMut<'a, MaskedStorage<BodyComponent<N>>>>;
+    BodySetStorage<'a, N, FetchMut<'a, MaskedStorage<BodyComponent<N>>>>;
 
 impl<'a, N: RealField> SystemData<'a> for WriteBodyStorage<'a, N> {
     fn setup(res: &mut World) {
@@ -174,9 +160,9 @@ impl<N: RealField> Component for BodyComponent<N> {
 pub struct BodySetStorage<'e, N: RealField, D>(pub Storage<'e, BodyComponent<N>, D>);
 
 impl<'a, 'e, N, D> Join for &'a BodySetStorage<'e, N, D>
-    where
-        N: RealField,
-        D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
+where
+    N: RealField,
+    D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Mask = &'a BitSet;
     type Type = &'a dyn Body<N>;
@@ -192,9 +178,9 @@ impl<'a, 'e, N, D> Join for &'a BodySetStorage<'e, N, D>
 }
 
 impl<'a, 'e, N, D> Join for &'a mut BodySetStorage<'e, N, D>
-    where
-        N: RealField,
-        D: DerefMut<Target = MaskedStorage<BodyComponent<N>>>,
+where
+    N: RealField,
+    D: DerefMut<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Mask = &'a BitSet;
     type Type = &'a mut dyn Body<N>;
@@ -211,9 +197,9 @@ impl<'a, 'e, N, D> Join for &'a mut BodySetStorage<'e, N, D>
 }
 
 impl<'a, 'e, N, D> Not for &'a BodySetStorage<'e, N, D>
-    where
-        N: RealField,
-        D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
+where
+    N: RealField,
+    D: Deref<Target = MaskedStorage<BodyComponent<N>>>,
 {
     type Output = AntiStorage<'a>;
 

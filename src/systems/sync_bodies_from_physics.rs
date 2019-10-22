@@ -1,12 +1,8 @@
-use crate::{
-    nalgebra::RealField,
-    position::Position,
-    world::ReadBodyStorage,
-};
+use crate::{nalgebra::RealField, position::Position, world::ReadBodyStorage};
 
 use specs::{Join, System, WriteStorage};
 
-use std::{marker::PhantomData};
+use std::marker::PhantomData;
 
 /// The `SyncBodiesFromPhysicsSystem` synchronised the updated position of
 /// the `RigidBody`s in the nphysics `World` with their Specs counterparts. This
@@ -21,10 +17,7 @@ where
     N: RealField,
     P: Position<N>,
 {
-    type SystemData = (
-        WriteStorage<'s, P>,
-        ReadBodyStorage<'s, N>,
-    );
+    type SystemData = (WriteStorage<'s, P>, ReadBodyStorage<'s, N>);
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut positions, body_set) = data;
@@ -33,7 +26,9 @@ where
         for (body, position) in (&body_set, &mut positions).join() {
             // if a RigidBody exists in the nphysics World we fetch it and update the
             // Position component accordingly
-            *position.isometry_mut() = body.position();
+            if let Some(part) = body.part(0) {
+                *position.isometry_mut() = part.position();
+            }
         }
     }
 }
