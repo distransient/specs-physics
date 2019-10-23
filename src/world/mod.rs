@@ -13,6 +13,8 @@ pub use collider_set::{ColliderComponent, ColliderHandleType, ColliderSet};
 pub type MechanicalWorldRes<N> = MechanicalWorld<N, BodyHandleType, ColliderHandleType>;
 pub type GeometricalWorldRes<N> = GeometricalWorld<N, BodyHandleType, ColliderHandleType>;
 
-// TODO: Could likely turn these into storages/provide Join methods?
+// TODO: Can probably make the JointConstraintSet a Storage.
 pub type JointConstraintSetRes<N> = DefaultJointConstraintSet<N, BodyHandleType>;
+// TODO: Can probably make ForceGeneratorSet a Storage
+// but the usefulness seems somewhat limited
 pub type ForceGeneratorSetRes<N> = DefaultForceGeneratorSet<N, BodyHandleType>;

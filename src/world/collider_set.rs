@@ -92,7 +92,7 @@ impl<'f, N: RealField> SystemData<'f> for ColliderSet<'f, N> {
         for event in storage.channel().read(&mut reader) {
             match event {
                 ComponentEvent::Removed(index) => {
-                    // Don't panic! (please (I'm asking the computer))
+                    // Don't panic please! (I'm asking the computer)
                     unsafe {
                         // Ok this can be even more incredibly wrong than what we did in body_set.
                         // Only one way to find out

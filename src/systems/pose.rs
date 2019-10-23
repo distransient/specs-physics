@@ -5,9 +5,9 @@ use std::marker::PhantomData;
 /// The `SyncBodiesFromPhysicsSystem` synchronised the updated position of
 /// the `RigidBody`s in the nphysics `World` with their Specs counterparts. This
 /// affects the `Position` `Component` related to the `Entity`.
-pub struct SyncBodiesFromPhysicsSystem<N: RealField, P: Position<N>>(PhantomData<(N, P)>);
+pub struct PhysicsPoseSystem<N: RealField, P: Position<N>>(PhantomData<(N, P)>);
 
-impl<'s, N: RealField, P: Position<N>> System<'s> for SyncBodiesFromPhysicsSystem<N, P> {
+impl<'s, N: RealField, P: Position<N>> System<'s> for PhysicsPoseSystem<N, P> {
     type SystemData = (WriteStorage<'s, P>, ReadStorage<'s, BodyComponent<N>>);
 
     fn run(&mut self, (mut positions, bodies): Self::SystemData) {
@@ -22,7 +22,7 @@ impl<'s, N: RealField, P: Position<N>> System<'s> for SyncBodiesFromPhysicsSyste
     }
 }
 
-impl<N: RealField, P: Position<N>> Default for SyncBodiesFromPhysicsSystem<N, P> {
+impl<N: RealField, P: Position<N>> Default for PhysicsPoseSystem<N, P> {
     fn default() -> Self {
         Self(PhantomData)
     }

@@ -4,10 +4,13 @@ extern crate simple_logger;
 
 use specs::{Builder, World, WorldExt};
 use specs_physics::{
-    colliders::Shape,
-    nalgebra::{Isometry3, Vector3},
-    nphysics::{algebra::Velocity3, object::BodyStatus},
-    physics_dispatcher, PhysicsBodyBuilder, PhysicsColliderBuilder, SimplePosition,
+    ncollide::shape::{Ball, ShapeHandle},
+    nphysics::{
+        math::{Isometry, Vector},
+        object::{ColliderDesc, RigidBodyDesc},
+    },
+    systems::physics_dispatcher,
+    EntityBuilderExt, SimplePosition,
 };
 
 fn main() {
@@ -25,7 +28,7 @@ fn main() {
     // create an Entity with a dynamic PhysicsBody component and a velocity
     let entity = world
         .create_entity()
-        .with(SimplePosition::<f32>(Isometry3::<f32>::translation(
+        .with(SimplePosition::<f32>(Isometry::<f32>::translation(
             1.0, 1.0, 1.0,
         )))
         .with(

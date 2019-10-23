@@ -86,3 +86,9 @@ impl<N: RealField> Position<N> for SimplePosition<N> {
 impl<N: RealField> Component for SimplePosition<N> {
     type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
 }
+
+impl<N: RealField> Default for SimplePosition<N> {
+    fn default() -> Self {
+        Self(Isometry::identity())
+    }
+}

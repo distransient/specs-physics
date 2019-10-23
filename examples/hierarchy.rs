@@ -1,12 +1,15 @@
 extern crate log;
 extern crate simple_logger;
 
-use specs::{world::World, Builder, WorldExt};
+use specs::{Builder, World, WorldExt};
 use specs_physics::{
-    colliders::Shape,
-    nalgebra::{Isometry3, Vector3},
-    nphysics::object::BodyStatus,
-    physics_dispatcher, PhysicsBodyBuilder, PhysicsColliderBuilder, PhysicsParent, SimplePosition,
+    ncollide::shape::{Ball, ShapeHandle},
+    nphysics::{
+        math::Vector,
+        object::{ColliderDesc, RigidBodyDesc},
+    },
+    systems::physics_dispatcher,
+    EntityBuilderExt, SimplePosition,
 };
 
 fn main() {

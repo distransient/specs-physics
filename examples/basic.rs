@@ -3,10 +3,13 @@ extern crate simple_logger;
 
 use specs::{Builder, World, WorldExt};
 use specs_physics::{
-    colliders::Shape,
-    nalgebra::{Isometry3, Vector3},
-    nphysics::object::BodyStatus,
-    physics_dispatcher, PhysicsBodyBuilder, PhysicsColliderBuilder, SimplePosition,
+    ncollide::shape::{Ball, ShapeHandle},
+    nphysics::{
+        math::Vector,
+        object::{ColliderDesc, RigidBodyDesc},
+    },
+    systems::physics_dispatcher,
+    EntityBuilderExt, SimplePosition,
 };
 
 fn main() {
@@ -21,19 +24,16 @@ fn main() {
     let mut dispatcher = physics_dispatcher::<f32, SimplePosition<f32>>();
     dispatcher.setup(&mut world);
 
+    let body_desc = RigidBodyDesc::<f32>::new().translation(Vector::x() * 2.0);
+    let shape = ShapeHandle::<f32>::new(Ball::new(1.6));
+    let collider_desc = ColliderDesc::new(shape);
+
     // create an Entity containing the required Components
     world
         .create_entity()
-        .with(SimplePosition::<f32>(Isometry3::<f32>::translation(
-            1.0, 1.0, 1.0,
-        )))
-        .with(PhysicsBodyBuilder::<f32>::from(BodyStatus::Dynamic).build())
-        .with(
-            PhysicsColliderBuilder::<f32>::from(Shape::Cuboid {
-                half_extents: Vector3::new(1.0, 1.0, 1.0),
-            })
-            .build(),
-        )
+        .with(SimplePosition::<f32>::default())
+        .with_body(body_desc.build())
+        .with_collider(&collider_desc)
         .build();
 
     // execute the dispatcher

@@ -165,7 +165,7 @@
 //! use specs_physics::{
 //!     systems::{
 //!         PhysicsStepperSystem,
-//!         SyncBodiesFromPhysicsSystem,
+//!         PhysicsPoseSystem,
 //!         SyncBodiesToPhysicsSystem,
 //!         SyncCollidersToPhysicsSystem,
 //!         SyncParametersToPhysicsSystem,
@@ -199,7 +199,7 @@
 //!         ],
 //!     )
 //!     .with(
-//!         SyncBodiesFromPhysicsSystem::<f32, SimplePosition<f32>>::default(),
+//!         PhysicsPoseSystem::<f32, SimplePosition<f32>>::default(),
 //!         "sync_bodies_from_physics_system",
 //!         &["physics_stepper_system"],
 //!     )
@@ -239,6 +239,15 @@ extern crate shrinkwraprs;
 
 pub use nalgebra;
 
+#[cfg(any(
+    not(any(feature = "dim2", feature = "dim3")),
+    all(feature = "dim2", feature = "dim3")
+))]
+compile_error!(
+    r#"Either the feature "dim3" or the feature "dim2" must be enabled.
+You cannot enable both, and you cannot enable neither."#
+);
+
 #[cfg(feature = "dim3")]
 pub use ncollide3d as ncollide;
 #[cfg(feature = "dim3")]
@@ -249,10 +258,14 @@ pub use ncollide2d as ncollide;
 #[cfg(feature = "dim2")]
 pub use nphysics2d as nphysics;
 
-pub mod builder;
-pub mod events;
+mod builder;
 pub mod position;
+pub mod stepper;
 pub mod systems;
 pub mod world;
 
-pub use self::position::{Position, SimplePosition};
+pub use self::{
+    builder::EntityBuilderExt,
+    position::{Position, SimplePosition},
+    world::{BodyComponent, ColliderComponent},
+};
