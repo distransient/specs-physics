@@ -7,12 +7,12 @@ use crate::{
 use specs::{world::Builder, EntityBuilder, WorldExt};
 
 pub trait EntityBuilderExt {
-    fn with_body<N: RealField>(self, body: impl Body<N>) -> Self;
+    fn with_body<N: RealField, B: Body<N>>(self, body: B) -> Self;
     fn with_collider<N: RealField>(self, collider: &ColliderDesc<N>) -> Self;
 }
 
 impl EntityBuilderExt for EntityBuilder<'_> {
-    fn with_body<N: RealField>(self, body: impl Body<N>) -> Self {
+    fn with_body<N: RealField, B: Body<N>>(self, body: B) -> Self {
         self.with(BodyComponent(Box::new(body)))
     }
 

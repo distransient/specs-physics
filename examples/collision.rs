@@ -1,15 +1,14 @@
-#[macro_use]
 extern crate log;
 extern crate simple_logger;
 
-use specs::{Builder, World, WorldExt};
+use specs::{Builder, DispatcherBuilder, World, WorldExt};
 use specs_physics::{
     ncollide::shape::{Ball, ShapeHandle},
     nphysics::{
-        math::{Isometry, Vector},
+        math::Vector,
         object::{ColliderDesc, RigidBodyDesc},
     },
-    systems::physics_dispatcher,
+    systems::PhysicsBundle,
     EntityBuilderExt, SimplePosition,
 };
 
@@ -22,43 +21,13 @@ fn main() {
 
     // create the dispatcher containing all relevant Systems; alternatively to using
     // the convenience function you can add all required Systems by hand
-    let mut dispatcher = physics_dispatcher::<f32, SimplePosition<f32>>();
+    let mut dispatcher = DispatcherBuilder::new();
+    PhysicsBundle::<f32, SimplePosition<f32>>::default().register(&mut world, &mut dispatcher);
+    let mut dispatcher = dispatcher.build();
     dispatcher.setup(&mut world);
 
-    // create an Entity with a dynamic PhysicsBody component and a velocity
-    let entity = world
-        .create_entity()
-        .with(SimplePosition::<f32>(Isometry::<f32>::translation(
-            1.0, 1.0, 1.0,
-        )))
-        .with(
-            PhysicsBodyBuilder::<f32>::from(BodyStatus::Dynamic)
-                .velocity(Velocity3::linear(1.0, 0.0, 0.0))
-                .build(),
-        )
-        .with(
-            PhysicsColliderBuilder::<f32>::from(Shape::Cuboid {
-                half_extents: Vector3::new(2.0, 2.0, 1.0),
-            })
-            .build(),
-        )
-        .build();
-
-    // create an Entity with a static PhysicsBody component right next to the first
-    // one
-    world
-        .create_entity()
-        .with(SimplePosition::<f32>(Isometry3::<f32>::translation(
-            3.0, 1.0, 1.0,
-        )))
-        .with(PhysicsBodyBuilder::<f32>::from(BodyStatus::Static).build())
-        .with(
-            PhysicsColliderBuilder::<f32>::from(Shape::Cuboid {
-                half_extents: Vector3::new(2.0, 2.0, 1.0),
-            })
-            .build(),
-        )
-        .build();
+    // Add dynamic cuboid (2.0, 2.0, 1.0) with velocity of 1*x at (1.0, 1.0, 1.0)
+    // Add static cuboid (2.0, 2.0, 1.0) at (3.0, 1.0, 1.0)
 
     // execute the dispatcher
     dispatcher.dispatch(&world);

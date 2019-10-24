@@ -1,0 +1,4 @@
+[submodule "nphysics"]
+	path = nphysics
+	url = https://github.com/distransient/nphysics
+	branch = bodyset_trait_object

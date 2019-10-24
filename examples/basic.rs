@@ -1,41 +1,64 @@
 extern crate log;
 extern crate simple_logger;
 
-use specs::{Builder, World, WorldExt};
+use specs::{Builder, DispatcherBuilder, Join, System, World, WorldExt, WriteStorage};
 use specs_physics::{
     ncollide::shape::{Ball, ShapeHandle},
     nphysics::{
-        math::Vector,
+        algebra::ForceType,
+        math::{Force, Vector},
         object::{ColliderDesc, RigidBodyDesc},
     },
-    systems::physics_dispatcher,
-    EntityBuilderExt, SimplePosition,
+    systems::PhysicsBundle,
+    BodyComponent, EntityBuilderExt, SimplePosition,
 };
 
 fn main() {
-    // initialise the logger for system logs
-    simple_logger::init().unwrap();
-
-    // initialise the Specs world; this will contain our Resources and Entities
+    // Initialise the Specs world
+    // This will contain our Resources and Entities
     let mut world = World::new();
 
-    // create the dispatcher containing all relevant Systems; alternatively to using
-    // the convenience function you can add all required Systems by hand
-    let mut dispatcher = physics_dispatcher::<f32, SimplePosition<f32>>();
+    // Create the dispatcher with our systems on it
+    let mut dispatcher_builder =
+        DispatcherBuilder::new().with(MyPhysicsSystem, "my_physics_system", &[]);
+
+    // Attach the specs-physics systems to the dispatcher,
+    // with our pre-physics-stepping systems as a dependency
+    PhysicsBundle::<f32, SimplePosition<f32>>::default()
+        .with_deps(&["my_physics_system"])
+        .register(&mut world, &mut dispatcher_builder);
+
+    // Build our dispatcher for use in the application loop
+    let mut dispatcher = dispatcher_builder.build();
     dispatcher.setup(&mut world);
 
-    let body_desc = RigidBodyDesc::<f32>::new().translation(Vector::x() * 2.0);
-    let shape = ShapeHandle::<f32>::new(Ball::new(1.6));
+    // Build our physics data
+    let body = RigidBodyDesc::new().translation(Vector::x() * 2.0).build();
+    let shape = ShapeHandle::new(Ball::new(1.6));
     let collider_desc = ColliderDesc::new(shape);
 
-    // create an Entity containing the required Components
+    // Create an entity and attach that data to it
     world
         .create_entity()
         .with(SimplePosition::<f32>::default())
-        .with_body(body_desc.build())
-        .with_collider(&collider_desc)
+        .with_body::<f32, _>(body)
+        .with_collider::<f32>(&collider_desc)
         .build();
 
-    // execute the dispatcher
+    // Execute the dispatcher like this in your application loop
     dispatcher.dispatch(&world);
+}
+
+struct MyPhysicsSystem;
+
+impl<'s> System<'s> for MyPhysicsSystem {
+    type SystemData = WriteStorage<'s, BodyComponent<f32>>;
+
+    fn run(&mut self, mut bodies: Self::SystemData) {
+        for body in (&mut bodies,).join() {
+            // Operate on our bodies.
+            body.0
+                .apply_force(0, &Force::linear(Vector::x()), ForceType::Force, true)
+        }
+    }
 }

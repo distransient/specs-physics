@@ -17,7 +17,7 @@ keywords = ["specs", "nphysics", "nphysics3d"]
 default = ["dim3", "nightly"]
 dim3 = ["ncollide3d", "nphysics3d"]
 dim2 = ["ncollide2d", "nphysics2d"]
-amethyst = ["amethyst_core"]
+amethyst = ["amethyst_core", "amethyst_error"]
 nightly = ["specs/nightly"]
 
 [dependencies]
@@ -32,10 +32,11 @@ nalgebra = "0.18"
 ncollide2d = { version = "0.20", optional = true }
 ncollide3d = { version = "0.20", optional = true }
 
-nphysics2d = { path = "../nphysics/build/nphysics2d", optional = true }
-nphysics3d = { path = "../nphysics/build/nphysics3d", optional = true }
+nphysics2d = { path = "nphysics/build/nphysics2d", optional = true }
+nphysics3d = { path = "nphysics/build/nphysics3d", optional = true }
 
 amethyst_core = { version = "0.8", optional = true }
+amethyst_error = { version = "0.3", optional = true }
 
 [dev-dependencies]
 simple_logger = "1.3"
