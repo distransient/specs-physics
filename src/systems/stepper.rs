@@ -1,13 +1,13 @@
 use crate::{
     nalgebra::{convert as na_convert, RealField},
-    stepper::StepperRes,
+    stepper::Step,
     world::{
         BodySet, ColliderSet, ForceGeneratorSetRes, GeometricalWorldRes, JointConstraintSetRes,
         MechanicalWorldRes,
     },
 };
 
-use specs::{System, Write, WriteExpect};
+use specs::{Read, System, WriteExpect};
 use std::marker::PhantomData;
 
 /// This system steps the physics world once when called.
@@ -23,7 +23,7 @@ impl<'s, N: RealField> System<'s> for PhysicsStepperSystem<N> {
         ColliderSet<'s, N>,
         WriteExpect<'s, JointConstraintSetRes<N>>,
         WriteExpect<'s, ForceGeneratorSetRes<N>>,
-        Option<Write<'s, StepperRes>>,
+        Option<Read<'s, Step>>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -34,15 +34,14 @@ impl<'s, N: RealField> System<'s> for PhysicsStepperSystem<N> {
             mut collider_set,
             mut joint_constraint_set,
             mut force_generator_set,
-            batch_time,
+            step,
         ) = data;
 
         // If we've added a batch time step resource to the world, check if we need to
         // update our timestep from that resource.
-        if let Some(mut time) = batch_time {
-            if time.time_step_dirty() {
-                mechanical_world.set_timestep(na_convert(time.time_step().as_secs_f64()));
-                time.time_step_clean();
+        if let Some(step_data) = step {
+            if step_data.step_dirty() {
+                mechanical_world.set_timestep(na_convert(step_data.delta().as_secs_f64()));
             }
         }
 

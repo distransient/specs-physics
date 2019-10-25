@@ -204,14 +204,6 @@ impl StepperRes {
     pub fn global_steps(&self) -> u64 {
         self.global_steps
     }
-
-    pub(crate) fn time_step_dirty(&self) -> bool {
-        self.time_step_dirty
-    }
-
-    pub(crate) fn time_step_clean(&mut self) {
-        self.time_step_dirty = false;
-    }
 }
 
 // That's right, I'm clever.
@@ -219,6 +211,8 @@ impl Iterator for StepperRes {
     type Item = Step;
 
     fn next(&mut self) -> Option<Self::Item> {
+        self.time_step_dirty = false;
+
         // Initialize frame.
         if self.frame_start.is_none() || self.frame_steps == 0 {
             self.frame_steps = 0;
@@ -261,6 +255,7 @@ impl Iterator for StepperRes {
 
             Some(Step {
                 delta: current_frame_delta,
+                step_dirty: self.time_step_dirty,
                 accumulator_remaining: self.accumulator,
                 global_step_number: self.global_steps,
                 frame_step_number: self.frame_steps,
@@ -304,6 +299,7 @@ pub enum SemiFixedQualifierState {
 #[derive(Debug, Default, Clone)]
 pub struct Step {
     delta: Duration,
+    step_dirty: bool,
     accumulator_remaining: Duration,
     global_step_number: u64,
     frame_step_number: u32,
@@ -319,6 +315,10 @@ impl Step {
         self.accumulator_remaining
     }
 
+    pub fn step_dirty(&self) -> bool {
+        self.step_dirty
+    }
+
     pub fn global_step_number(&self) -> u64 {
         self.global_step_number
     }
@@ -329,6 +329,7 @@ impl Step {
 
     pub(crate) fn update(&mut self, other: Self) {
         self.delta = other.delta;
+        self.step_dirty = other.step_dirty;
         self.accumulator_remaining = other.accumulator_remaining;
         self.global_step_number = other.global_step_number;
         self.frame_step_number = other.frame_step_number;

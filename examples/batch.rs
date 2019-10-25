@@ -49,7 +49,9 @@ fn main() {
         .build();
 
     // Execute the dispatcher like this in your application loop
-    dispatcher.dispatch(&world);
+    for _ in 0..200 {
+        dispatcher.dispatch(&world);
+    }
 }
 
 struct MyPhysicsSystem;

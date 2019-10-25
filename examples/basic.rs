@@ -1,7 +1,7 @@
 extern crate log;
 extern crate simple_logger;
 
-use specs::{Builder, DispatcherBuilder, Join, System, World, WorldExt, WriteStorage};
+use specs::{Builder, DispatcherBuilder, Join, ReadStorage, System, World, WorldExt, WriteStorage};
 use specs_physics::{
     ncollide::shape::{Ball, ShapeHandle},
     nphysics::{
@@ -29,7 +29,13 @@ fn main() {
         .register(&mut world, &mut dispatcher_builder);
 
     // Build our dispatcher for use in the application loop
-    let mut dispatcher = dispatcher_builder.build();
+    let mut dispatcher = dispatcher_builder
+        .with(
+            MyRenderingSystem,
+            "my_rendering_system",
+            &["physics_pose_system"],
+        )
+        .build();
     dispatcher.setup(&mut world);
 
     // Build our physics data
@@ -46,7 +52,9 @@ fn main() {
         .build();
 
     // Execute the dispatcher like this in your application loop
-    dispatcher.dispatch(&world);
+    for _ in 0..200 {
+        dispatcher.dispatch(&world);
+    }
 }
 
 struct MyPhysicsSystem;
@@ -59,6 +67,18 @@ impl<'s> System<'s> for MyPhysicsSystem {
             // Operate on our bodies.
             body.0
                 .apply_force(0, &Force::linear(Vector::x()), ForceType::Force, true)
+        }
+    }
+}
+
+struct MyRenderingSystem;
+
+impl<'s> System<'s> for MyRenderingSystem {
+    type SystemData = ReadStorage<'s, SimplePosition<f32>>;
+
+    fn run(&mut self, positions: Self::SystemData) {
+        for pos in (&positions,).join() {
+            println!("(Technically) Rendering {:?}", pos);
         }
     }
 }

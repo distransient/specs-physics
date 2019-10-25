@@ -11,11 +11,13 @@ impl<'s, N: RealField, P: Position<N>> System<'s> for PhysicsPoseSystem<N, P> {
     type SystemData = (WriteStorage<'s, P>, ReadStorage<'s, BodyComponent<N>>);
 
     fn run(&mut self, (mut positions, bodies): Self::SystemData) {
+        println!("pose system start");
         // iterate over all PhysicBody components joined with their Positions
         for (position, body) in (&mut positions, &bodies).join() {
             // if a RigidBody exists in the nphysics World we fetch it and update the
             // Position component accordingly
             if let Some(part) = body.part(0) {
+                println!("syncing body part");
                 *position.isometry_mut() = part.position();
             }
         }
