@@ -2,6 +2,7 @@ use crate::{
     nalgebra::{convert as na_convert, RealField},
     nphysics::math::Vector,
     position::Position,
+    stepper::{Step, StepperRes},
     world::{ForceGeneratorSetRes, GeometricalWorldRes, JointConstraintSetRes, MechanicalWorldRes},
 };
 use specs::{DispatcherBuilder, World};
@@ -16,6 +17,7 @@ pub use self::{batch::PhysicsBatchSystem, pose::PhysicsPoseSystem, stepper::Phys
 pub struct PhysicsBundle<N: RealField, P: Position<N>> {
     mechanical_world: MechanicalWorldRes<N>,
     geometrical_world: GeometricalWorldRes<N>,
+    stepper_res: Option<StepperRes>,
     // Exercising superfluous allocations at init-time
     // is better than figuring out the lifetimes
     // for the slice version of this at programming-time.
@@ -28,10 +30,15 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         Self::from_deps(gravity, &[])
     }
 
+    pub fn stepper(interval: u32) -> Self {
+        Self::default().with_stepper(interval)
+    }
+
     pub fn from_deps(gravity: Vector<N>, dep: &[&str]) -> Self {
         Self::from_parts(
             MechanicalWorldRes::<N>::new(gravity),
             GeometricalWorldRes::<N>::new(),
+            None,
             dep,
         )
     }
@@ -39,11 +46,13 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
     pub fn from_parts(
         mechanical_world: MechanicalWorldRes<N>,
         geometrical_world: GeometricalWorldRes<N>,
+        stepper_res: Option<StepperRes>,
         dep: &[&str],
     ) -> Self {
         Self {
             mechanical_world,
             geometrical_world,
+            stepper_res,
             stepper_deps: dep.iter().map(|s| Box::from(*s)).collect(),
             marker: PhantomData,
         }
@@ -67,9 +76,19 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         self
     }
 
+    pub fn with_stepper(mut self, interval: u32) -> Self {
+        self.stepper_res = Some(StepperRes::new_fixed(interval));
+        self
+    }
+
     pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
         world.insert(self.mechanical_world);
         world.insert(self.geometrical_world);
+
+        if let Some(stepper_res) = self.stepper_res {
+            world.insert(stepper_res);
+            world.insert(Step::default());
+        }
 
         // TODO: These would be defaulted when converted to specs Storages.
         world.insert(JointConstraintSetRes::<N>::new());
