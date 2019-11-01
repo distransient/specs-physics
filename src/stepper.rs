@@ -1,8 +1,13 @@
-//! This module contains types exclusively used for the specs-physics
-//! fixed stepping implementation. If you choose to use some other way to
-//! perform fixed stepping, such as using Amethyst's fixed dispatcher instead,
-//! you can simply ignore this module.
+/*!
+# Stepper Data Module
 
+This module contains types exclusively used for the specs-physics
+fixed stepping implementation. If you choose to use some other way to
+perform fixed stepping, such as using Amethyst's fixed dispatcher instead,
+you can simply ignore this module.
+
+
+*/
 use std::{
     fmt,
     time::{Duration, Instant},
@@ -307,22 +312,27 @@ pub struct Step {
 
 impl Step {
     /// Delta time of the current physics step.
+    /// If you're using a fixed step, this will always be the same.
     pub fn delta(&self) -> Duration {
         self.delta
     }
 
+    /// Time left in the delta accumulator for the stepper.
     pub fn accumulator_remaining(&self) -> Duration {
         self.accumulator_remaining
     }
 
+    /// Whether the delta of the step has been modified.
     pub fn step_dirty(&self) -> bool {
         self.step_dirty
     }
 
+    /// How many physics steps have occured globally
     pub fn global_step_number(&self) -> u64 {
         self.global_step_number
     }
 
+    /// How many physics steps have occured in this frame.
     pub fn frame_step_number(&self) -> u32 {
         self.frame_step_number
     }

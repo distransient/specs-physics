@@ -1,6 +1,3 @@
-extern crate log;
-extern crate simple_logger;
-
 use specs::{
     Builder, DispatcherBuilder, Join, ReadExpect, ReadStorage, System, World, WorldExt,
     WriteStorage,
@@ -16,14 +13,22 @@ use specs_physics::{
     BodyComponent, EntityBuilderExt, SimplePosition,
 };
 
+/*
+ * Our program will be split up in three parts.
+ * 1. Specs setup, where we initialize our World and create our Dispatcher
+ *    with all of our systems on it.
+ * 2. Adding the Ground body for the static colliders of our world.
+ * 3. Adding a cube of rigidbody balls like in the nphysics 3d ball example
+ * 4. Calling our dispatcher.
+ */
 fn main() {
+    /*
+     * 1: Specs Setup
+     */
     // Initialise the Specs world
     // This will contain our Resources and Entities
     let mut world = World::new();
 
-    /*
-     * Specs Dispatcher.
-     */
     // Create the dispatcher with our systems on it
     let mut dispatcher_builder =
         DispatcherBuilder::new().with(MyPhysicsSystem, "my_physics_system", &[]);
@@ -39,6 +44,8 @@ fn main() {
         .with(
             MyRenderingSystem,
             "my_rendering_system",
+            // This is the name of the system you want to depend on
+            // if you want your system to run after physics executes.
             &["physics_pose_system"],
         )
         .build();
@@ -47,7 +54,7 @@ fn main() {
     dispatcher.setup(&mut world);
 
     /*
-     * Physics Ground.
+     * 2: Add the ground body
      */
     let ground_thickness = 0.2;
 
@@ -65,8 +72,9 @@ fn main() {
         .build();
 
     /*
-     * Physics Balls.
+     * 3: Add dynamic bodies
      */
+
     // Some values used to build the balls
     let ball_amount: usize = 8;
     let ball_radius = 0.1;
@@ -87,8 +95,11 @@ fn main() {
             for k in 0..ball_amount {
                 world
                     .create_entity()
+                    // If our Position type is on the same entity as a Body,
+                    // don't worry about setting it to any value other than default/zero
+                    // it will be overwritten by the Pose system anyways.
                     .with(SimplePosition::<f32>::default())
-                    .with_body(
+                    .with_body::<f32, _>(
                         RigidBodyDesc::new()
                             // Offset each body to build a cube of balls
                             .translation(Vector::new(
@@ -98,21 +109,21 @@ fn main() {
                             ))
                             .build(),
                     )
-                    .with_collider(&ball_collider)
+                    .with_collider::<f32>(&ball_collider)
                     .build();
             }
         }
     }
 
     /*
-     * Running
+     * 4: Execution
+     *    Call this in your application loop.
      */
-    // Execute the dispatcher in your application loop
     dispatcher.dispatch(&world);
 }
 
+/// An example physics system, performing joins on our bodies
 struct MyPhysicsSystem;
-
 impl<'s> System<'s> for MyPhysicsSystem {
     type SystemData = WriteStorage<'s, BodyComponent<f32>>;
 
@@ -125,8 +136,9 @@ impl<'s> System<'s> for MyPhysicsSystem {
     }
 }
 
+/// An example rendering system,
+/// using the synchronized positions from nphysics simulation.
 struct MyRenderingSystem;
-
 impl<'s> System<'s> for MyRenderingSystem {
     type SystemData = (
         ReadStorage<'s, SimplePosition<f32>>,

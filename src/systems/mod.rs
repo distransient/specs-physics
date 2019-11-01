@@ -81,6 +81,8 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         self
     }
 
+    pub fn with_stepper_instance
+
     pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
         world.insert(self.mechanical_world);
         world.insert(self.geometrical_world);

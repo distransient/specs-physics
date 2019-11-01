@@ -19,8 +19,8 @@ pub type BodyHandleType = Entity;
 /// entity with a `Position` component will make the syncing system synchronize
 /// the isometry of the first part in that Body to your `Position` (or simply
 /// the position of the body if it is a single part body). This relationship is
-/// one-way, however. If you'd like to update the position of a Body, do so via
-/// this component, and not from the `Position` component.
+/// one-way, however. If you'd like to update the position of a Body, **do so
+/// via this component, and not from the `Position` component**.
 ///
 /// If you'd like to synchronize individual parts of a body to a `Position`, you
 /// should not attach a `Position` to the entity with this Component, and should
@@ -30,10 +30,62 @@ pub type BodyHandleType = Entity;
 // However, this is hard if not impossible to avoid due to nphysics API limitations.
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
-pub struct BodyComponent<N: RealField>(pub Box<dyn Body<N>>);
+pub struct BodyComponent<N: RealField> {
+    pub body: Box<dyn Body<N>>,
+    // Bitset of entities with a BodyPartHandle to this Body
+    handles: BitSet,
+}
 
 impl<N: RealField> Component for BodyComponent<N> {
     type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
+}
+
+impl<N: RealField> BodyComponent<N> {
+    /// Creates a new Body Component.
+    /// This is made useful by inserting the returned struct
+    /// into the BodyComponent's Storage.
+    fn new<B: Body<N>>(body: B) -> Self {
+        Self {
+            body: Box::new(body),
+            handles: BitSet::new(),
+        }
+    }
+
+    /// Attempts to cast this Body to a RigidBody.
+    /// Just sugar for `Body::downcast_ref()`.
+    pub fn as_rigid_body(&self) -> Option<&RigidBody<N>> {
+        self.body.downcast_ref()
+    }
+
+    /// Attempts to mutably cast this Body to a RigidBody.
+    /// Just sugar for `Body::downcast_mut()`.
+    pub fn as_rigid_body_mut(&mut self) -> Option<&mut RigidBody<N>> {
+        self.body.downcast_mut()
+    }
+
+    /// Attempts to cast this Body to a Multibody.
+    /// Just sugar for `Body::downcast_ref()`.
+    pub fn as_multi_body(&self) -> Option<&Multibody<N>> {
+        self.body.downcast_ref()
+    }
+
+    /// Attempts to mutably cast this Body to a Multibody.
+    /// Just sugar for `Body::downcast_mut()`.
+    pub fn as_multi_body_mut(&mut self) -> Option<&mut Multibody<N>> {
+        self.body.downcast_mut()
+    }
+
+    /// Attempts to cast this Body to Ground.
+    /// Just sugar for `Body::downcast_ref()`.
+    pub fn as_ground(&self) -> Option<&Ground<N>> {
+        self.body.downcast_ref()
+    }
+
+    /// Attempts to mutably cast this Body to Ground.
+    /// Just sugar for `Body::downcast_mut()`.
+    pub fn as_ground_mut(&mut self) -> Option<&mut Ground<N>> {
+        self.body.downcast_mut()
+    }
 }
 
 /// List of removals used by `BodySet` so that nphysics may `pop` single removal
@@ -49,7 +101,8 @@ pub(crate) struct BodyRemovalRes(pub Vec<BodyHandleType>);
 pub(crate) struct BodyReaderRes(pub ReaderId<ComponentEvent>);
 
 /// This structure is only used to pass the BodyComponent storage to nphysics
-/// API's. You probably (definitely) don't want to use it.
+/// API's. You probably don't want to use it. unless you're using your own
+/// system for stepping.
 pub struct BodySet<'f, N: RealField> {
     entities: Fetch<'f, EntitiesRes>,
     storage: WriteStorage<'f, BodyComponent<N>>,
