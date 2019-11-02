@@ -43,7 +43,7 @@ pub trait EntityBuilderExt {
 
 impl EntityBuilderExt for EntityBuilder<'_> {
     fn with_body<N: RealField, B: Body<N>>(self, body: B) -> Self {
-        self.with(BodyComponent(Box::new(body)))
+        self.with(BodyComponent::new(body))
     }
 
     fn with_collider<N: RealField>(self, collider: &ColliderDesc<N>) -> Self {

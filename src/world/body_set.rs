@@ -1,13 +1,13 @@
 use crate::{
     nalgebra::RealField,
-    nphysics::object::{Body, BodySet as NBodySet},
+    nphysics::object::{Body, BodySet as NBodySet, Ground, Multibody, RigidBody},
 };
 
 use specs::{
     shred::{Fetch, FetchMut, MetaTable, ResourceId},
     storage::{AnyStorage, ComponentEvent, MaskedStorage, TryDefault},
     world::EntitiesRes,
-    Component, DenseVecStorage, Entity, FlaggedStorage, Join, ReaderId, SystemData, World,
+    BitSet, Component, DenseVecStorage, Entity, FlaggedStorage, Join, ReaderId, SystemData, World,
     WorldExt, WriteStorage,
 };
 
@@ -31,6 +31,7 @@ pub type BodyHandleType = Entity;
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
 pub struct BodyComponent<N: RealField> {
+    #[shrinkwrap(main_field)]
     pub body: Box<dyn Body<N>>,
     // Bitset of entities with a BodyPartHandle to this Body
     handles: BitSet,
@@ -44,7 +45,7 @@ impl<N: RealField> BodyComponent<N> {
     /// Creates a new Body Component.
     /// This is made useful by inserting the returned struct
     /// into the BodyComponent's Storage.
-    fn new<B: Body<N>>(body: B) -> Self {
+    pub fn new<B: Body<N>>(body: B) -> Self {
         Self {
             body: Box::new(body),
             handles: BitSet::new(),
@@ -173,11 +174,11 @@ impl<'f, N: RealField> NBodySet<N> for BodySet<'f, N> {
     type Handle = BodyHandleType;
 
     fn get(&self, handle: Self::Handle) -> Option<&dyn Body<N>> {
-        self.storage.get(handle).map(|x| x.0.as_ref())
+        self.storage.get(handle).map(|x| x.body.as_ref())
     }
 
     fn get_mut(&mut self, handle: Self::Handle) -> Option<&mut dyn Body<N>> {
-        self.storage.get_mut(handle).map(|x| x.0.as_mut())
+        self.storage.get_mut(handle).map(|x| x.body.as_mut())
     }
 
     fn contains(&self, handle: Self::Handle) -> bool {
@@ -186,13 +187,13 @@ impl<'f, N: RealField> NBodySet<N> for BodySet<'f, N> {
 
     fn foreach(&self, f: &mut dyn FnMut(Self::Handle, &dyn Body<N>)) {
         for (handle, body) in (&self.entities, &self.storage).join() {
-            f(handle, body.0.as_ref());
+            f(handle, body.body.as_ref());
         }
     }
 
     fn foreach_mut(&mut self, f: &mut dyn FnMut(Self::Handle, &mut dyn Body<N>)) {
         for (handle, body) in (&self.entities, &mut self.storage).join() {
-            f(handle, body.0.as_mut());
+            f(handle, body.body.as_mut());
         }
     }
 

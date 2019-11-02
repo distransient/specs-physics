@@ -81,7 +81,10 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         self
     }
 
-    pub fn with_stepper_instance
+    pub fn with_stepper_instance(mut self, stepper: StepperRes) -> Self {
+        self.stepper_res = Some(stepper);
+        self
+    }
 
     pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
         world.insert(self.mechanical_world);
@@ -121,14 +124,14 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
 }
 
 #[cfg(feature = "amethyst")]
-impl<'a, 'b, N: RealField, P: Position<N>> amethyst_core::SystemBundle<'a, 'b>
+impl<'a, 'b, N: RealField, P: Position<N>> amethyst::core::SystemBundle<'a, 'b>
     for PhysicsBundle<N, P>
 {
     fn build(
         self,
         world: &mut World,
         builder: &mut DispatcherBuilder,
-    ) -> Result<(), amethyst_error::Error> {
+    ) -> Result<(), amethyst::error::Error> {
         Ok(self.register(world, builder))
     }
 }

@@ -37,7 +37,7 @@ pub trait Position<N: RealField>:
 }
 
 #[cfg(all(feature = "amethyst", feature = "dim3"))]
-impl Position<f32> for amethyst_core::Transform {
+impl Position<f32> for amethyst::core::Transform {
     fn isometry(&self) -> &Isometry<f32> {
         self.isometry()
     }
@@ -51,7 +51,7 @@ impl Position<f32> for amethyst_core::Transform {
 // https://github.com/olvyko/specs-physics/blob/master/src/pose.rs
 // TODO: Write tests for this code.
 #[cfg(all(feature = "amethyst", feature = "dim2"))]
-impl Position<f32> for amethyst_core::Transform {
+impl Position<f32> for amethyst::core::Transform {
     fn isometry(&self) -> &Isometry<f32> {
         let iso = self.isometry();
         Isometry::from_parts(
@@ -68,6 +68,8 @@ impl Position<f32> for amethyst_core::Transform {
         self
     }
 }
+
+// TODO: 64 bit implementation for amethyst
 
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Shrinkwrap)]
 #[shrinkwrap(mutable)]
