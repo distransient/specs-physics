@@ -1,10 +1,11 @@
 use crate::{nalgebra::RealField, position::Position, world::BodyComponent};
-use specs::{Join, ReadStorage, System, WriteStorage};
+use specs::prelude::*;
 use std::marker::PhantomData;
 
 /// The `SyncBodiesFromPhysicsSystem` synchronised the updated position of
 /// the `RigidBody`s in the nphysics `World` with their Specs counterparts. This
 /// affects the `Position` `Component` related to the `Entity`.
+#[cfg_attr(feature = "amethyst", derive(amethyst::derive::SystemDesc), system_desc(name(PhysicsPoseSystemDesc)))]
 pub struct PhysicsPoseSystem<N: RealField, P: Position<N>>(PhantomData<(N, P)>);
 
 impl<'s, N: RealField, P: Position<N>> System<'s> for PhysicsPoseSystem<N, P> {

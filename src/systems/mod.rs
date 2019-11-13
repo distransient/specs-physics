@@ -13,6 +13,8 @@ mod pose;
 mod stepper;
 
 pub use self::{batch::PhysicsBatchSystem, pose::PhysicsPoseSystem, stepper::PhysicsStepperSystem};
+#[cfg(feature = "amethyst")]
+pub use self::{pose::PhysicsPoseSystemDesc, stepper::PhysicsStepperSystemDesc};
 
 pub struct PhysicsBundle<N: RealField, P: Position<N>> {
     mechanical_world: MechanicalWorldRes<N>,
@@ -86,7 +88,7 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         self
     }
 
-    pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
+    fn register_resources(self, world: &mut World) {
         world.insert(self.mechanical_world);
         world.insert(self.geometrical_world);
 
@@ -98,7 +100,9 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
         // TODO: These would be defaulted when converted to specs Storages.
         world.insert(JointConstraintSetRes::<N>::new());
         world.insert(ForceGeneratorSetRes::<N>::new());
+    }
 
+    pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
         // Add PhysicsStepperSystem after all other Systems that write data to the
         // nphysics World and has to depend on them; this System is used to progress the
         // nphysics World for all existing objects.
@@ -120,6 +124,8 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
             "physics_pose_system",
             &["physics_stepper_system"],
         );
+
+        self.register_resources(world);
     }
 }
 
@@ -132,7 +138,32 @@ impl<'a, 'b, N: RealField, P: Position<N>> amethyst::core::SystemBundle<'a, 'b>
         world: &mut World,
         builder: &mut DispatcherBuilder,
     ) -> Result<(), amethyst::error::Error> {
-        Ok(self.register(world, builder))
+        use amethyst::core::SystemDesc;
+
+        // Add PhysicsStepperSystem after all other Systems that write data to the
+        // nphysics World and has to depend on them; this System is used to progress the
+        // nphysics World for all existing objects.
+        builder.add(
+            PhysicsStepperSystemDesc::<N>::default().build(world),
+            "physics_stepper_system",
+            self.stepper_deps
+                .iter()
+                .map(|s| s.as_ref())
+                .collect::<Vec<&str>>()
+                .as_slice(),
+        );
+
+        // Add PhysicsPoseSystem last as it handles the
+        // synchronisation between nphysics World bodies and the Position
+        // components; this depends on the PhysicsStepperSystem.
+        builder.add(
+            PhysicsPoseSystemDesc::<N, P>::default().build(world),
+            "physics_pose_system",
+            &["physics_stepper_system"],
+        );
+
+        self.register_resources(world);
+        Ok(())
     }
 }
 

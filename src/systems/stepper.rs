@@ -6,13 +6,13 @@ use crate::{
         MechanicalWorldRes,
     },
 };
-
-use specs::{Read, System, WriteExpect};
+use specs::prelude::*;
 use std::marker::PhantomData;
 
 /// This system steps the physics world once when called.
 /// To ensure the visual motion of the simulation matches the speeds within the
 /// simulation, you will want to
+#[cfg_attr(feature = "amethyst", derive(amethyst::derive::SystemDesc), system_desc(name(PhysicsStepperSystemDesc)))]
 pub struct PhysicsStepperSystem<N: RealField>(PhantomData<N>);
 
 impl<'s, N: RealField> System<'s> for PhysicsStepperSystem<N> {
