@@ -89,17 +89,17 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
     }
 
     fn register_resources(self, world: &mut World) {
-        world.insert(self.mechanical_world);
-        world.insert(self.geometrical_world);
+        world.entry::<MechanicalWorldRes<N>>().or_insert(self.mechanical_world);
+        world.entry::<GeometricalWorldRes<N>>().or_insert(self.geometrical_world);
 
         if let Some(stepper_res) = self.stepper_res {
-            world.insert(stepper_res);
-            world.insert(Step::default());
+            world.entry::<StepperRes>().or_insert(stepper_res);
+            world.entry::<Step>().or_insert(Step::default());
         }
 
         // TODO: These would be defaulted when converted to specs Storages.
-        world.insert(JointConstraintSetRes::<N>::new());
-        world.insert(ForceGeneratorSetRes::<N>::new());
+        world.entry::<JointConstraintSetRes<N>>().or_insert(JointConstraintSetRes::<N>::new());
+        world.entry::<ForceGeneratorSetRes<N>>().or_insert(ForceGeneratorSetRes::<N>::new());
     }
 
     pub fn register(self, world: &mut World, builder: &mut DispatcherBuilder) {
