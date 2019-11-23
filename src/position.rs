@@ -17,14 +17,14 @@ pub trait Pose<N: RealField>: Component + Send + Sync {
 
 #[cfg(all(feature = "amethyst", feature = "dim3"))]
 impl Pose<f32> for amethyst::core::Transform {
-    fn sync(&mut self, pose: &Isometry<N>) {
-        *self.isometry_mut() = pose;
+    fn sync(&mut self, pose: &Isometry<f32>) {
+        *self.isometry_mut() = *pose;
     }
 }
 
 #[cfg(all(feature = "amethyst", feature = "dim2"))]
 impl Pose<f32> for amethyst::core::Transform {
-    fn sync(&mut self, pose: &Isometry<N>) {
+    fn sync(&mut self, pose: &Isometry<f32>) {
         let euler = self.rotation().euler_angles();
         self.set_rotation_euler(euler.0, euler.1, pose.rotation.angle());
         self.set_translation_x(pose.translation.x);
@@ -58,13 +58,9 @@ impl<N: RealField> SimplePosition<N> {
     }
 }
 
-impl<N: RealField> Position<N> for SimplePosition<N> {
-    fn isometry(&self) -> &Isometry<N> {
-        &self.0
-    }
-
-    fn isometry_mut(&mut self) -> &mut Isometry<N> {
-        &mut self.0
+impl<N: RealField> Pose<N> for SimplePosition<N> {
+    fn sync(&mut self, pose: &Isometry<N>) {
+        self.0 = *pose;
     }
 }
 

@@ -7,7 +7,7 @@ use specs::{
     shred::{Fetch, FetchMut, MetaTable, ResourceId},
     storage::{AnyStorage, ComponentEvent, MaskedStorage, TryDefault},
     world::EntitiesRes,
-    BitSet, Component, DenseVecStorage, Entity, FlaggedStorage, Join, ReaderId, SystemData, World,
+    BitSet, Component, DenseVecStorage, Entity, FlaggedStorage, NullStorage, Join, ReaderId, SystemData, World,
     WorldExt, WriteStorage,
 };
 
@@ -22,26 +22,29 @@ impl Component for BodyPartHandle {
 
 /// Component that marks the Body on this Entity as a RigidBody.
 /// Do not attach more than one kind of Body Marker type to a Body entity.
+#[derive(Default)]
 pub struct RigidBodyMarker;
 
 impl Component for RigidBodyMarker {
-    type Storage = NullStorage;
+    type Storage = NullStorage<Self>;
 }
 
 /// Component that marks the Body on this Entity as a Multibody.
 /// Do not attach more than one kind of Body Marker type to a Body entity.
+#[derive(Default)]
 pub struct MultibodyMarker;
 
-impl Component for RigidBodyMarker {
-    type Storage = NullStorage;
+impl Component for MultibodyMarker {
+    type Storage = NullStorage<Self>;
 }
 
 /// Component that marks the Body on this Entity as Ground.
 /// Do not attach more than one kind of Body Marker type to a Body entity.
+#[derive(Default)]
 pub struct GroundMarker;
 
-impl Component for RigidBodyMarker {
-    type Storage = NullStorage;
+impl Component for GroundMarker {
+    type Storage = NullStorage<Self>;
 }
 
 /// The handle type of Bodies passed to nphysics API type parameters receiving

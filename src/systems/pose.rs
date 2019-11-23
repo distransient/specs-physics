@@ -1,4 +1,4 @@
-use crate::{nalgebra::RealField, position::Position, world::BodyComponent};
+use crate::{nalgebra::RealField, position::Pose, world::BodyComponent};
 use specs::prelude::*;
 use std::marker::PhantomData;
 
@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 /// the `RigidBody`s in the nphysics `World` with their Specs counterparts. This
 /// affects the `Position` `Component` related to the `Entity`.
 #[cfg_attr(feature = "amethyst", derive(amethyst::derive::SystemDesc), system_desc(name(PhysicsPoseSystemDesc)))]
-pub struct PhysicsPoseSystem<N: RealField, P: Position<N>>(PhantomData<(N, P)>);
+pub struct PhysicsPoseSystem<N: RealField, P: Pose<N>>(PhantomData<(N, P)>);
 
-impl<'s, N: RealField, P: Position<N>> System<'s> for PhysicsPoseSystem<N, P> {
+impl<'s, N: RealField, P: Pose<N>> System<'s> for PhysicsPoseSystem<N, P> {
     type SystemData = (WriteStorage<'s, P>, ReadStorage<'s, BodyComponent<N>>);
 
     fn run(&mut self, (mut positions, bodies): Self::SystemData) {
@@ -17,13 +17,13 @@ impl<'s, N: RealField, P: Position<N>> System<'s> for PhysicsPoseSystem<N, P> {
             // if a RigidBody exists in the nphysics World we fetch it and update the
             // Position component accordingly
             if let Some(part) = body.part(0) {
-                *position.isometry_mut() = part.position();
+                position.sync(&part.position());
             }
         }
     }
 }
 
-impl<N: RealField, P: Position<N>> Default for PhysicsPoseSystem<N, P> {
+impl<N: RealField, P: Pose<N>> Default for PhysicsPoseSystem<N, P> {
     fn default() -> Self {
         Self(PhantomData)
     }

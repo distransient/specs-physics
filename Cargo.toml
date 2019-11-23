@@ -40,6 +40,7 @@ nphysics3d = { version = "0.13", optional = true }
 git = "https://github.com/amethyst/amethyst"
 optional = true
 default-features = false
+nightly = ["specs-physics/nightly"]
 
 [dev-dependencies]
 simple_logger = "1.3"

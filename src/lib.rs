@@ -294,6 +294,6 @@ pub mod world;
 
 pub use self::{
     builder::EntityBuilderExt,
-    position::{Position, SimplePosition},
+    position::{Pose, SimplePosition},
     world::{BodyComponent, ColliderComponent},
 };

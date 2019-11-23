@@ -1,7 +1,7 @@
 use crate::{
     nalgebra::{convert as na_convert, RealField},
     nphysics::math::Vector,
-    position::Position,
+    position::Pose,
     stepper::{Step, StepperRes},
     world::{ForceGeneratorSetRes, GeometricalWorldRes, JointConstraintSetRes, MechanicalWorldRes},
 };
@@ -16,7 +16,7 @@ pub use self::{batch::PhysicsBatchSystem, pose::PhysicsPoseSystem, stepper::Phys
 #[cfg(feature = "amethyst")]
 pub use self::{pose::PhysicsPoseSystemDesc, stepper::PhysicsStepperSystemDesc};
 
-pub struct PhysicsBundle<N: RealField, P: Position<N>> {
+pub struct PhysicsBundle<N: RealField, P: Pose<N>> {
     mechanical_world: MechanicalWorldRes<N>,
     geometrical_world: GeometricalWorldRes<N>,
     stepper_res: Option<StepperRes>,
@@ -27,7 +27,7 @@ pub struct PhysicsBundle<N: RealField, P: Position<N>> {
     marker: PhantomData<P>,
 }
 
-impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
+impl<N: RealField, P: Pose<N>> PhysicsBundle<N, P> {
     pub fn new(gravity: Vector<N>) -> Self {
         Self::from_deps(gravity, &[])
     }
@@ -130,7 +130,7 @@ impl<N: RealField, P: Position<N>> PhysicsBundle<N, P> {
 }
 
 #[cfg(feature = "amethyst")]
-impl<'a, 'b, N: RealField, P: Position<N>> amethyst::core::SystemBundle<'a, 'b>
+impl<'a, 'b, N: RealField, P: Pose<N>> amethyst::core::SystemBundle<'a, 'b>
     for PhysicsBundle<N, P>
 {
     fn build(
@@ -167,7 +167,7 @@ impl<'a, 'b, N: RealField, P: Position<N>> amethyst::core::SystemBundle<'a, 'b>
     }
 }
 
-impl<N: RealField, P: Position<N>> Default for PhysicsBundle<N, P> {
+impl<N: RealField, P: Pose<N>> Default for PhysicsBundle<N, P> {
     fn default() -> Self {
         Self::new(Vector::<N>::y() * na_convert::<f64, N>(-9.81))
     }
