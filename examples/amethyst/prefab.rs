@@ -181,7 +181,7 @@ impl<'a> PrefabData<'a> for PhysicsPrefab {
         let (ref mut bodies, ref mut colliders, inner_transform) = system_data;
         match self.collider {
             ColliderShape::Cuboid((x, y, z)) => {
-                let shape = ShapeHandle::new(Cuboid::new(Vector::new(x/2., y/2., z/2.)));
+                let shape = ShapeHandle::new(Cuboid::new(Vector::new(x, y, z)));
                 colliders.insert(entity,
                     ColliderComponent(
                         ColliderDesc::new(shape)

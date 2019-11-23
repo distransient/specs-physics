@@ -112,15 +112,14 @@ Prefab (
             data: (
                 physics: (
                     transform: (
-                        translation: (0.0, 1.0, 0.0),
-                        rotation: (0, 0.5, 0.5, 0),
-                        scale: (10.0, 10.0, 10.0),
+                        translation: (0.0, -0.1, 0.0),
+                        scale: (10.0, 0.01, 10.0),
                     ),
                     status: Static,
-                    collider: Cuboid((10., 10.0, 0.01)),
+                    collider: Cuboid((10., 0.01, 10.0)),
                 ),
                 graphics: (
-                    mesh: Asset(File("mesh/rectangle.obj", ("OBJ", ()))),
+                    mesh: Asset(File("mesh/cube.obj", ("OBJ", ()))),
                     material: (
                         albedo: Generate(Srgba(1.0, 1.0, 1.0, 1.0)),
                     ),
@@ -149,7 +148,7 @@ Prefab (
                         translation: (0.0, 20.0, 20.0),
                         rotation: (-0.4, 0.0, 0.0, 0.862),
                     ),
-                    collider: Cuboid((5., 5., 10.)),
+                    collider: Cuboid((5., 5., 5.)),
                 ),
                 camera: (
                     active_camera: true,

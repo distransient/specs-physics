@@ -14,10 +14,12 @@ description = "Integration with nphysics for the SPECS Parallel ECS."
 keywords = ["specs", "nphysics", "nphysics3d"]
 
 [features]
-default = ["dim3", "nightly", "amethyst"]
+default = ["dim3", "amethyst"]
 dim3 = ["ncollide3d", "nphysics3d"]
 dim2 = ["ncollide2d", "nphysics2d"]
+metal = ["amethyst/metal"]
 nightly = ["specs/nightly"]
+vulkan = ["amethyst/vulkan"]
 
 [dependencies]
 log = "0.4"
@@ -38,7 +40,6 @@ nphysics3d = { version = "0.13", optional = true }
 git = "https://github.com/amethyst/amethyst"
 optional = true
 default-features = false
-features = ["vulkan"]
 
 [dev-dependencies]
 simple_logger = "1.3"
