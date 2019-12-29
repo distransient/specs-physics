@@ -18,7 +18,8 @@ use amethyst::{
     utils::application_root_dir,
     Error,
 };
-use specs_physics::{nphysics::math::Vector, systems::PhysicsBundle};
+use specs::prelude::*;
+use specs_physics::{nphysics::math::Vector, bundle::PhysicsBundle};
 
 use crate::{
     prefab::CustomScenePrefab,
@@ -33,8 +34,8 @@ struct Loading {
     prefab: Option<Handle<Prefab<MyPrefabData>>>,
 }
 
-struct Playing {
-    fixed_dispatcher: Dispatcher,
+struct Playing<'a, 'b> {
+    fixed_dispatcher: Dispatcher<'a, 'b>,
     scene: Handle<Prefab<MyPrefabData>>,
 }
 
@@ -63,14 +64,14 @@ impl SimpleState for Loading {
                 {
                     let _ = data.world.delete_entity(entity);
                 }
-                Trans::Switch(Box::new(Playing::new(self.prefab.as_ref().unwrap().clone())))
+                Trans::Switch(Playing::new(self.prefab.as_ref().unwrap().clone()))
             }
             Completion::Loading => Trans::None,
         }
     }
 }
 
-impl SimpleState for Playing {
+impl SimpleState for Playing<'_, '_> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let StateData { world, .. } = data;
 
@@ -91,19 +92,19 @@ impl SimpleState for Playing {
         Trans::None
     }
 
-    fn fixed_update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+    fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         self.fixed_dispatcher.dispatch(data.world);
         Trans::None
     }
 }
 
-impl Playing {
+impl <'a, 'b> Playing<'a, 'b> {
     fn new(scene: Handle<Prefab<MyPrefabData>>) -> Box<Self> {
-        let fixed_dispatcher = DispatcherBuilder
-        Self {
-            fixed_dispatcher:
+        let fixed_dispatcher = DispatcherBuilder::new().build();
+        Box::new(Self {
+            fixed_dispatcher,
             scene,
-        }
+        })
     }
 }
 
@@ -113,6 +114,7 @@ fn main() -> Result<(), Error> {
     let app_root = application_root_dir()?;
 
     // Add our meshes directory to the asset loader.
+
     let assets_dir = app_root.join("examples").join("amethyst").join("assets");
     let display_config_path = assets_dir.join("display.ron");
     let input_config_path = assets_dir.join("input_config.ron");
@@ -129,7 +131,7 @@ fn main() -> Result<(), Error> {
         .with_system_desc(CameraRotationSystemDesc::new(0.25, 0.25), "", &[])
         .with_system_desc(CursorHideSystemDesc::default(), "", &[])
         .with_system_desc(MouseFocusUpdateSystemDesc::default(), "", &[])
-        .with_bundle(PhysicsBundle::<f32, Transform>::new(Vector::y() * -9.81))?
+        .with_bundle(PhysicsBundle::<f32, Transform>::new(Vector::y() * -9.81, &[]))?
         .with_system_desc(CollisionDetectionSystemDesc::default(), "", &[])
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
