@@ -175,10 +175,10 @@ pub mod joints;
 pub mod stepper;
 pub mod systems;
 
-pub mod builder;
-pub mod bundle;
-pub mod pose;
-pub mod world;
+mod builder;
+mod bundle;
+mod pose;
+mod world;
 
 pub use self::{
     builder::EntityBuilderExt,

@@ -19,7 +19,7 @@ use amethyst::{
     Error,
 };
 use specs::prelude::*;
-use specs_physics::{nphysics::math::Vector, bundle::PhysicsBundle};
+use specs_physics::{nphysics::math::Vector, PhysicsBundle};
 
 use crate::{
     prefab::CustomScenePrefab,
