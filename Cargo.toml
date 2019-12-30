@@ -47,12 +47,14 @@ serde = { version = "1.0", features = ["derive"] }
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
+required-features = ["dim3"]
 
 [[example]]
 name = "batch"
 path = "examples/batch.rs"
+required-features = ["dim3"]
 
 [[example]]
 name = "amethyst"
 path = "examples/amethyst/main.rs"
-required-features = ["amethyst"]
+required-features = ["amethyst", "dim3"]
