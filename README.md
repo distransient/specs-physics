@@ -17,36 +17,36 @@
 [di]: https://docs.rs/specs-physics/badge.svg
 [dl]: https://docs.rs/specs-physics/
 
-**For when you want some [nphysics] in your [Specs]!**
-***Somewhat*** **better than sliced bread!**
+**Add [`nphysics`] to your [Specs] ECS entities!**
 
-Remember those "FooBarDefault" types in the [nphysics tutorial]?
-**specs-physics** provides [ECS Component]-based implementations for nphysics data sets,
+Remember those `FooBarDefault` types in the [`nphysics` tutorial]?
+**`specs-physics`** provides [ECS component]-based implementations for nphysics data sets,
 as well as faculties for synchronizing pose data to your position type of choice,
 and stepping functionality for stepping your simulations to a real good beat.
 
-[Specs]: https://slide-rs.github.io/specs/
-[nphysics]: https://www.nphysics.org/
-[nphysics tutorial]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#basic-setup
+[Specs]: https://github.com/amethyst/specs
+[`nphysics`]: https://www.nphysics.org/
+[`nphysics` tutorial]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#basic-setup
 [ECS Component]: https://amethyst.github.io/specs/01_intro.html#whats-an-ecs
 
 ## Usage
 
-To use **specs-physics** with a 3D nphysics world,
-add the following dependency to your project's *[Cargo.toml]*:
+To use **`specs-physics`** with a 3D [`nphysics`] world,
+add the following dependency to your project's [Cargo.toml]:
 
 ```toml
 [dependencies]
 specs-physics = { version = "0.4.0", features = ["dim3"] }
 ```
 
-For 2D nphysics, replace `dim3` with `dim2`.
+For a 2D [`nphysics`] world replace `dim3` with `dim2`.
+
 You **must** enable one of these two features, and you can *only* enable one of them!
 
-Also available is an `amethyst` feature,
-which adds synchronization support for [Amethyst] 
+The `amethyst` feature adds synchronization support for the [Amethyst] game engine 
 through `amethyst_core`'s [`Transform`] type
 as well as a [`SystemBundle`] trait impl for [`PhysicsBundle`].
+
 Usage is explained further below.
 
 [Cargo.toml]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html
@@ -54,9 +54,6 @@ Usage is explained further below.
 [`Transform`]: https://docs.amethyst.rs/stable/amethyst_core/transform/components/struct.Transform.html
 [`SystemBundle`]: https://docs.amethyst.rs/stable/amethyst_core/bundle/trait.SystemBundle.html
 [`PhysicsBundle`]: struct.PhysicsBundle.html
-
-### Dispatching
-
 
 
 ### Generic types
@@ -68,23 +65,23 @@ compatibility with as many external crates and game engines as possible.
 
 #### `N: RealField`
 
-[nphysics] is built upon [nalgebra] and uses various types and
+[`nphysics`] is built upon [`nalgebra`] and uses various types and
 structures from this crate. **specs-physics** builds up on this even further
 and utilises the same structures, which all work with any type that
 implements `nalgebra::RealField`. `nalgebra::RealField` is by default
-implemented for various standard types, such as `f32` and`f64`. `nalgebra`
+implemented for various standard types, such as `f32` and`f64`. [`nalgebra`]
 is re-exported under `specs_physics::nalgebra`.
 
 #### `P: Position<N>`
 
-a type parameter which implements the `specs_physics::bodies::Position`
+A type parameter which implements the `specs_physics::bodies::Position`
 *trait*, requiring also a `Component` implementation with a
 `FlaggedStorage`. This `Position` `Component` is used to initially place a
-[RigidBody] in the [nphysics] world and later used to synchronise the
+[`RigidBody`] in the [`nphysics`] world and later used to synchronise the
 updated translation and rotation of these bodies back into the [Specs]
 world.
 
-Example for a `Position` `Component`, simply using the "Isometry" type (aka
+For example a `Position` `Component` that simply uses `nalgebra`'s `Isometry3` type (a
 combined translation and rotation structure) directly:
 
 ```rust,ignore
@@ -108,21 +105,21 @@ impl Position<f32> for Pos {
 }
 ```
 
-If you're using [Amethyst], you can enable the "amethyst" feature for this
-crate which provides a `Position<Float>` impl for `Transform`.
+For those using [Amethyst]: the `amethyst` feature provides
+a `Position<Float>` impl for [`Transform`].
 
 ```toml
 [dependencies]
-specs-physics = { version = "0.3", features = ["amethyst"] }
+specs-physics = { version = "0.4", features = ["dim3", "amethyst"] }
 ```
 
 ### Components
 
 ##### PhysicsBody
 
-The `specs_physics::PhysicsBody` `Component` is used to define [RigidBody]
+The `specs_physics::PhysicsBody` `Component` is used to define [`RigidBody`]
 from the comforts of your [Specs] world. Changes to the `PhysicsBody` will
-automatically be synchronised with [nphysics].
+automatically be synchronised with [`nphysics`].
 
 Example:
 
@@ -145,9 +142,9 @@ let physics_body = PhysicsBodyBuilder::from(BodyStatus::Dynamic)
 ##### PhysicsCollider
 
 `specs_physics::PhysicsCollider`s are the counterpart to `PhysicsBody`s.
-They can exist on their own or as a part of a `PhysicsBody`
-`PhysicsCollider`s are used to define and create [Collider]'s in
-[nphysics].
+They can exist on their own or as a part of a `PhysicsBody`.
+`PhysicsCollider`s are used to define and create [`Collider`]'s in
+[`nphysics`].
 
 Example:
 
@@ -161,46 +158,46 @@ use specs_physics::{
 };
 
 let physics_collider = PhysicsColliderBuilder::from(
-       Shape::Cuboid{ half_extents: Vector3::new(10.0, 10.0, 1.0) })
-    .offset_from_parent(Isometry3::identity())
-    .density(1.2)
-    .material(MaterialHandle::new(BasicMaterial::default()))
-    .margin(0.02)
-    .collision_groups(CollisionGroups::default())
-    .linear_prediction(0.001)
-    .angular_prediction(0.0)
-    .sensor(true)
-    .build();
+    Shape::Cuboid{ half_extents: Vector3::new(10.0, 10.0, 1.0) })
+        .offset_from_parent(Isometry3::identity())
+        .density(1.2)
+        .material(MaterialHandle::new(BasicMaterial::default()))
+        .margin(0.02)
+        .collision_groups(CollisionGroups::default())
+        .linear_prediction(0.001)
+        .angular_prediction(0.0)
+        .sensor(true)
+        .build();
 ```
 
-To assign multiple [Collider]'s the the same body, [Entity hierarchy]
-can be used. This utilises [specs-hierarchy].
+To assign multiple [`Collider`]'s the the same body, [Entity hierarchy]
+can be used. This utilises [`specs-hierarchy`].
 
-### Systems
+### Systems and dispatching
 
 The following `System`s currently exist and should be added to your
 `Dispatcher` in order:
 
-1. `specs_physics::systems::SyncBodiesToPhysicsSystem` - handles the
-creation, modification and removal of [RigidBody]'s based on the
+1. `specs_physics::systems::SyncBodiesToPhysicsSystem` — handles the
+creation, modification and removal of [`RigidBody`]'s based on the
 `PhysicsBody` `Component` and an implementation of the `Position`
 *trait*.
 
-2. `specs_physics::systems::SyncCollidersToPhysicsSystem` - handles
-the creation, modification and removal of [Collider]'s based on the
+2. `specs_physics::systems::SyncCollidersToPhysicsSystem` — handles
+the creation, modification and removal of [`Collider`]'s based on the
 `PhysicsCollider` `Component`. This `System` depends on
-`SyncBodiesToPhysicsSystem` as [Collider] can depend on [RigidBody].
+`SyncBodiesToPhysicsSystem` as [`Collider`] can depend on [`RigidBody`].
 
-3. `specs_physics::systems::SyncParametersToPhysicsSystem` - handles the
-modification of the [nphysics] `World`s parameters.
+3. `specs_physics::systems::SyncParametersToPhysicsSystem` — handles the
+modification of the [`nphysics`] `World`s parameters.
 
-4. `specs_physics::systems::PhysicsStepperSystem` - handles the progression
-of the [nphysics] `World` and causes objects to actually move and
+4. `specs_physics::systems::PhysicsStepperSystem` — handles the progression
+of the [`nphysics`] `World` and causes objects to actually move and
 change their position. This `System` is the backbone for collision
 detection.
 
-5. `specs_physics::systems::SyncBodiesFromPhysicsSystem` -
-handles the synchronisation of [RigidBody] positions and dynamics back
+5. `specs_physics::systems::SyncBodiesFromPhysicsSystem` —
+handles the synchronisation of [`RigidBody`] positions and dynamics back
 into the [Specs] `Component`s. This `System` also utilises the
 `Position` *trait* implementation.
 
@@ -261,16 +258,16 @@ use specs_physics::systems::SyncBodiesToPhysicsSystem;
 SyncBodiesToPhysicsSystem::<f32, Transform>::default();
 ```
 
-Alternatively to building your own `Dispatcher`, you can always fall back on
+Besides building your own `Dispatcher`, you can always fall back on
 the convenience function `specs_physics::physics_dispatcher()`, which
-returns a configured *default* `Dispatcher` for you or
-`specs_physics::register_physics_systems()` which takes a
-`DispatcherBuilder` as an argument and registers the required `System`s for
+returns a configured *default* `Dispatcher` or
+`specs_physics::register_physics_systems()` which takes
+`DispatcherBuilder` as argument and registers the required `System`s for
 you.
 
-[nalgebra]: https://nalgebra.org/
-[RigidBody]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#rigid-bodies
-[Collider]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#colliders
+[`nalgebra`]: https://nalgebra.org/
+[`RigidBody`]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#rigid-bodies
+[`Collider`]: https://www.nphysics.org/rigid_body_simulations_with_contacts/#colliders
 [Amethyst]: https://amethyst.rs/
-[Entity hierarchy]: https://github.com/bamling/specs-physics/blob/master/examples/hierarchy.rs
-[specs-hierarchy]: https://github.com/rustgd/specs-hierarchy
+[Entity hierarchy]: https://github.com/amethyst/specs-physics/blob/master/examples/hierarchy.rs
+[`specs-hierarchy`]: https://github.com/rustgd/specs-hierarchy

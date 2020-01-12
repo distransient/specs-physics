@@ -12,7 +12,7 @@ use specs_physics::{
     BodyComponent,
     nalgebra::Unit,
     nphysics::math::{Vector, Velocity},
-    world::GeometricalWorldRes,
+    GeometricalWorldRes,
 };
 
 #[derive(Default, SystemDesc)]
