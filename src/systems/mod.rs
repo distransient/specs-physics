@@ -9,3 +9,6 @@ mod pose;
 mod stepper;
 
 pub use self::{batch::PhysicsBatchSystem, pose::PhysicsPoseSystem, stepper::PhysicsStepperSystem};
+
+#[cfg(feature = "amethyst")]
+pub use self::{pose::PhysicsPoseSystemDesc, stepper::PhysicsStepperSystemDesc};
