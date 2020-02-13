@@ -9,17 +9,17 @@ use amethyst::{
     winit::{DeviceEvent, Event},
 };
 use specs_physics::{
-    BodyComponent,
     nalgebra::Unit,
     nphysics::math::{Vector, Velocity},
-    world::GeometricalWorldRes,
+    BodyComponent, GeometricalWorldRes,
 };
 
 #[derive(Default, SystemDesc)]
 #[system_desc(name(CollisionDetectionSystemDesc))]
 pub struct CollisionDetectionSystem;
 
-// Here is a system that can perform additional logic when a collision is detected
+// Here is a system that can perform additional logic when a collision is
+// detected
 impl<'a> System<'a> for CollisionDetectionSystem {
     type SystemData = ReadExpect<'a, GeometricalWorldRes<f32>>;
 
@@ -36,7 +36,8 @@ pub struct CameraMovementSystem {
     speed: f32,
 }
 
-// Here is a system that sets the velocity of the camera's RigidBody component depending on user input
+// Here is a system that sets the velocity of the camera's RigidBody component
+// depending on user input
 impl<'a> System<'a> for CameraMovementSystem {
     type SystemData = (
         Read<'a, ActiveCamera>,
@@ -82,7 +83,10 @@ impl<'a> System<'a> for CameraRotationSystem {
         Read<'a, WindowFocus>,
     );
 
-    fn run(&mut self, (active_camera, mut bodies, event_channel, hide, window_focus): Self::SystemData) {
+    fn run(
+        &mut self,
+        (active_camera, mut bodies, event_channel, hide, window_focus): Self::SystemData,
+    ) {
         for event in event_channel.read(&mut self.event_reader) {
             if window_focus.is_focused && hide.hide {
                 if let Event::DeviceEvent { ref event, .. } = *event {
@@ -92,12 +96,22 @@ impl<'a> System<'a> for CameraRotationSystem {
                                 let body = body
                                     .as_rigid_body_mut()
                                     .expect("Active camera must be RigidBody");
-                                // Update camera rotation using cleaner `Tansform` api instead of manually applying maths to `Isometry`
+                                // Update camera rotation using cleaner `Tansform` api instead of
+                                // manually applying maths to `Isometry`
                                 body.set_position({
                                     let isometry = body.position();
-                                    let mut transform = Transform::new(isometry.translation, isometry.rotation, Vector::zeros());
-                                    transform.append_rotation_x_axis((-y as f32 * self.sensitivity_y).to_radians());
-                                    transform.prepend_rotation(Vector::y_axis(), (-x as f32 * self.sensitivity_x).to_radians());
+                                    let mut transform = Transform::new(
+                                        isometry.translation,
+                                        isometry.rotation,
+                                        Vector::zeros(),
+                                    );
+                                    transform.append_rotation_x_axis(
+                                        (-y as f32 * self.sensitivity_y).to_radians(),
+                                    );
+                                    transform.prepend_rotation(
+                                        Vector::y_axis(),
+                                        (-x as f32 * self.sensitivity_x).to_radians(),
+                                    );
                                     *transform.isometry()
                                 });
                             }
