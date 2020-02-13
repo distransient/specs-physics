@@ -6,6 +6,7 @@ use amethyst::{
     },
     controls::{CursorHideSystemDesc, MouseFocusUpdateSystemDesc},
     core::transform::{Transform, TransformBundle},
+    ecs::prelude::*,
     input::{is_close_requested, is_key_down, InputBundle, StringBindings, VirtualKeyCode},
     prelude::*,
     renderer::{
@@ -18,7 +19,7 @@ use amethyst::{
     utils::application_root_dir,
     Error,
 };
-use specs_physics::{nphysics::math::Vector, systems::PhysicsBundle};
+use specs_physics::{nphysics::math::Vector, PhysicsBundle};
 
 use crate::{
     prefab::CustomScenePrefab,
@@ -33,8 +34,8 @@ struct Loading {
     prefab: Option<Handle<Prefab<MyPrefabData>>>,
 }
 
-struct Playing {
-    fixed_dispatcher: Dispatcher,
+struct Playing<'a> {
+    fixed_dispatcher: Dispatcher<'a, 'a>,
     scene: Handle<Prefab<MyPrefabData>>,
 }
 
@@ -63,14 +64,14 @@ impl SimpleState for Loading {
                 {
                     let _ = data.world.delete_entity(entity);
                 }
-                Trans::Switch(Box::new(Playing::new(self.prefab.as_ref().unwrap().clone())))
+                Trans::Switch(Playing::new(self.prefab.as_ref().unwrap().clone()))
             }
             Completion::Loading => Trans::None,
         }
     }
 }
 
-impl SimpleState for Playing {
+impl<'a> SimpleState for Playing<'_> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let StateData { world, .. } = data;
 
@@ -91,19 +92,19 @@ impl SimpleState for Playing {
         Trans::None
     }
 
-    fn fixed_update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+    fn fixed_update(&mut self, data: StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         self.fixed_dispatcher.dispatch(data.world);
         Trans::None
     }
 }
 
-impl Playing {
+impl<'a> Playing<'_> {
     fn new(scene: Handle<Prefab<MyPrefabData>>) -> Box<Self> {
-        let fixed_dispatcher = DispatcherBuilder
-        Self {
-            fixed_dispatcher:
+        let fixed_dispatcher = DispatcherBuilder::new().build();
+        Box::new(Self {
+            fixed_dispatcher,
             scene,
-        }
+        })
     }
 }
 
@@ -129,7 +130,10 @@ fn main() -> Result<(), Error> {
         .with_system_desc(CameraRotationSystemDesc::new(0.25, 0.25), "", &[])
         .with_system_desc(CursorHideSystemDesc::default(), "", &[])
         .with_system_desc(MouseFocusUpdateSystemDesc::default(), "", &[])
-        .with_bundle(PhysicsBundle::<f32, Transform>::new(Vector::y() * -9.81))?
+        .with_bundle(PhysicsBundle::<f32, Transform>::new(
+            Vector::y() * -9.81,
+            &[],
+        ))?
         .with_system_desc(CollisionDetectionSystemDesc::default(), "", &[])
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
