@@ -117,13 +117,8 @@ impl StepperRes {
             None
         }
     }
-}
 
-// That's right, I'm clever.
-impl Iterator for StepperRes {
-    type Item = ();
-
-    fn next(&mut self) -> Option<Self::Item> {
+    pub fn should_render(&mut self) -> bool {
         let current_frame_delta = self.current_time_step();
         self.is_dirty = false;
 
@@ -145,7 +140,7 @@ impl Iterator for StepperRes {
 
             // Signal end of stepping due to postponement.
             self.frame_steps = 0;
-            None
+            false
         } else if self.accumulator >= current_frame_delta {
             // We may step the simulation once, drain the accumulator.
             self.frame_steps += 1;
@@ -155,20 +150,14 @@ impl Iterator for StepperRes {
             self.is_dirty = current_frame_delta != self.last_delta;
             self.last_delta = current_frame_delta;
 
-            Some(())
+            true
         } else {
             // We've exhausted the accumulator.
             self.time_step.fast_at_step(self.global_steps);
 
             // Signal end of stepping.
             self.frame_steps = 0;
-            None
+            false
         }
-    }
-}
-
-impl Default for StepperRes {
-    fn default() -> Self {
-        Self::new(FixedTimeStep::default())
     }
 }
