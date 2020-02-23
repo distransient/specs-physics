@@ -31,7 +31,7 @@ impl<'a, 'b, 's, N: RealField> System<'s> for PhysicsBatchSystem<'a, 'b, N> {
     type SystemData = BatchUncheckedWorld<'s>;
 
     fn run(&mut self, data: Self::SystemData) {
-        for _ in data.0.fetch_mut::<StepperRes>().deref_mut() {
+        while data.0.fetch_mut::<StepperRes>().deref_mut().should_render() {
             self.dispatcher.dispatch(data.0);
         }
     }
