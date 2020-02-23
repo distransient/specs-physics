@@ -16,13 +16,14 @@ keywords = ["specs", "physics", "real-time"]
 default = []
 dim3 = ["ncollide3d", "nphysics3d"]
 dim2 = ["ncollide2d", "nphysics2d"]
+nightly = ["specs/nightly"]
 
 [dependencies]
 log = "0.4"
 objekt = "0.1"
 shrinkwraprs = "0.2"
 
-specs = { version = "0.16", default-features = false }
+specs = "0.15"
 specs-hierarchy = "0.5"
 nalgebra = "0.19"
 
